@@ -5,7 +5,7 @@ from auth.jwt_functions import create_jwt
 from models.models import Users
 from datafunctions import naive_utcnow
 from sqlalchemy import insert, select
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends, Response
 from models.schemes import User, UserSignIn
 from data_base import get_session
 

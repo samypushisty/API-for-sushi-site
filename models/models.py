@@ -53,14 +53,29 @@ class News(Base):
 
 
 # таблица с историей покупок
-class UsersHistory(Base):
-    __tablename__ = "users_history"
+
+
+class Basket(Base):
+    __tablename__ = "basket"
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    food_id = Column(Integer, ForeignKey("food.id"))
-    енз
+    food_id = Column(Integer, nullable=False)
+    price = Column(Integer, nullable=False)
+    type = Column(String, nullable=False)
 
+    __table_args__ = (
+        CheckConstraint("type IN ('food', 'set')", name='check_valid_type'),
+    )
+class UsersHistory(Base):
+    __tablename__ = "users_history"
+
+    id = Column(Integer, nullable=False, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    date = Column(TIMESTAMP, default=naive_utcnow())
+    list_food = Column(String, nullable=False)
+    list_set = Column(String, nullable=False)
+    total_price = Column(Integer, nullable=False)
 
 # лист избранного
 class UsersFavoriteFood(Base):
