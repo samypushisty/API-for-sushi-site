@@ -13,6 +13,8 @@ class Users(Base):
 
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False, unique=True)
+    addresses = Column(String)
+    number = Column(String, nullable=False, unique=True)
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     registered_at = Column(TIMESTAMP, default=naive_utcnow())
@@ -59,7 +61,7 @@ class Basket(Base):
     __tablename__ = "basket"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     food_id = Column(Integer, nullable=False)
     price = Column(Integer, nullable=False)
     type = Column(String, nullable=False)
@@ -71,18 +73,19 @@ class UsersHistory(Base):
     __tablename__ = "users_history"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     date = Column(TIMESTAMP, default=naive_utcnow())
     list_food = Column(String, nullable=False)
     list_set = Column(String, nullable=False)
     total_price = Column(Integer, nullable=False)
+    address = Column(String, nullable=False)
 
 # лист избранного
 class UsersFavoriteFood(Base):
     __tablename__ = "users_favorite_food"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     food_id = Column(Integer, ForeignKey("food.id"))
 
 
@@ -90,7 +93,7 @@ class UsersFavoriteSet(Base):
     __tablename__ = "users_favorite_set"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     set_id = Column(Integer, ForeignKey("set.id"))
 
 
@@ -101,12 +104,3 @@ class FoodInSet(Base):
     id = Column(Integer, primary_key=True)
     set_id = Column(Integer, ForeignKey("set.id"))
     food_id = Column(Integer, ForeignKey("food.id"))
-
-
-# адреса пользователя
-class UserAddress(Base):
-    __tablename__ = "user_address"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    address = Column(String, nullable=False)

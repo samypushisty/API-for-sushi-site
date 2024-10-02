@@ -5,6 +5,9 @@ class User(BaseModel):
     email: str
     username: str
     password: str
+    number: str
+    addresses: str
+
 
 
 class UserSignIn(BaseModel):
@@ -12,7 +15,4 @@ class UserSignIn(BaseModel):
     password: str
 
 
-class AddBook(BaseModel):
-    title: str
-    description: str
 

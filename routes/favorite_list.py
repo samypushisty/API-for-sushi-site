@@ -1,5 +1,5 @@
 from fastapi.exceptions import HTTPException
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, Query
 from auth.jwt_functions import JwtInfo
@@ -15,7 +15,7 @@ favorite_list_rout = APIRouter(
 
 
 @favorite_list_rout.post("/add")
-async def addbooktofavoritelist(food_id: int, request: Request, session: AsyncSession = Depends(get_session),
+async def add_food_to_favorite_list(food_id: int, request: Request, session: AsyncSession = Depends(get_session),
                                 type_food: str = Query(
                                     None,
                                     title="Type of food",
@@ -30,6 +30,7 @@ async def addbooktofavoritelist(food_id: int, request: Request, session: AsyncSe
             })
             await session.execute(stmt)
             await session.commit()
+            return "product add"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except:
@@ -39,7 +40,7 @@ async def addbooktofavoritelist(food_id: int, request: Request, session: AsyncSe
 
 
 @favorite_list_rout.get("/show")
-async def watch_book(request: Request, session: AsyncSession = Depends(get_session)):
+async def watch_list(request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
@@ -54,6 +55,30 @@ async def watch_book(request: Request, session: AsyncSession = Depends(get_sessi
                 "foods": list_food
                       }
             return result
+        else:
+            return HTTPException(status_code=500, detail=jwt_info.info_except)
+    except Exception as e:
+        print(e)
+        return HTTPException(status_code=500, detail="something went wrong")
+    finally:
+        await session.close()
+
+
+@favorite_list_rout.delete("/product")
+async def delete_product_from_favorite_list(food_id: int, request: Request, session: AsyncSession = Depends(get_session),
+                                type_food: str = Query(
+                                    None,
+                                    title="Type of food",
+                                    description="Choose from food, set")):
+    jwt_info = JwtInfo(request.cookies.get("jwt"))
+    tables = {"food": UsersFavoriteFood, "set": UsersFavoriteSet}
+    parametres = {"food": UsersFavoriteFood.food_id, "set": UsersFavoriteSet.set_id}
+    try:
+        if jwt_info.valid:
+            query_set = delete(tables[type_food]).filter(parametres[type_food] == food_id).filter(tables[type_food].user_id == jwt_info.id)
+            await session.execute(query_set)
+            await session.commit()
+            return "product delete"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:

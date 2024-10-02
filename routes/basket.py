@@ -15,7 +15,7 @@ basket_rout = APIRouter(
 
 
 @basket_rout.post("/addfood")
-async def addbooktofavoritelist(food_id: int, request: Request, session: AsyncSession = Depends(get_session),
+async def add_food_to_basket(food_id: int, request: Request, session: AsyncSession = Depends(get_session),
                                 type_food: str = Query(
                                     None,
                                     title="Type of food",
@@ -50,7 +50,7 @@ async def addbooktofavoritelist(food_id: int, request: Request, session: AsyncSe
 
 
 @basket_rout.get("/show")
-async def watch_book(request: Request, session: AsyncSession = Depends(get_session)):
+async def watch_basket(request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
@@ -69,13 +69,14 @@ async def watch_book(request: Request, session: AsyncSession = Depends(get_sessi
 
 
 @basket_rout.delete("/product")
-async def addbooktofavoritelist(id: int, request: Request, session: AsyncSession = Depends(get_session)):
+async def delete_product_from_basket(id: int, request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
             query_set = delete(Basket).filter(Basket.id == id)
             await session.execute(query_set)
             await session.commit()
+            return "product delete"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
@@ -86,7 +87,7 @@ async def addbooktofavoritelist(id: int, request: Request, session: AsyncSession
 
 
 @basket_rout.post("/buy")
-async def addbooktofavoritelist(request: Request, session: AsyncSession = Depends(get_session)):
+async def buy(request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
@@ -121,7 +122,7 @@ async def addbooktofavoritelist(request: Request, session: AsyncSession = Depend
 
 
 @basket_rout.get("/history")
-async def watch_book(request: Request, session: AsyncSession = Depends(get_session)):
+async def watch_history(request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
