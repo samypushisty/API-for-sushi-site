@@ -87,7 +87,7 @@ async def delete_product_from_basket(id: int, request: Request, session: AsyncSe
 
 
 @basket_rout.post("/buy")
-async def buy(request: Request, session: AsyncSession = Depends(get_session)):
+async def buy(address: str, request: Request, session: AsyncSession = Depends(get_session)):
     jwt_info = JwtInfo(request.cookies.get("jwt"))
     try:
         if jwt_info.valid:
@@ -99,7 +99,8 @@ async def buy(request: Request, session: AsyncSession = Depends(get_session)):
                     "user_id": jwt_info.id,
                     "list_food": "",
                     "list_set": "",
-                    "total_price": 0
+                    "total_price": 0,
+                    "address": address
                 }
                 for i in food:
                     result["list_" + i.type] += " " + str(i.food_id)

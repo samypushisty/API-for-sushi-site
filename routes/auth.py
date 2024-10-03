@@ -1,14 +1,16 @@
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
 from auth.hash_password import hash_password, check_password
-from auth.jwt_functions import create_jwt, JwtInfo
+from auth.jwt_functions import create_jwt
 from models.models import Users
 from datafunctions import naive_utcnow
 from sqlalchemy import insert, select
 from fastapi import APIRouter, Depends, Response
 from models.schemes import User, UserSignIn
 from data_base import get_session
-from fastapi import Request
+
 
 
 authrouter = APIRouter(
@@ -62,24 +64,6 @@ async def signin(user_sign_in: UserSignIn,
     except:
         return HTTPException(status_code=500, detail="something went wrong")
     finally:
+        print(type(session))
         await session.close()
 
-
-@authrouter.post("/showinfo")
-async def showinfo( request: Request,
-        session: AsyncSession = Depends(get_session)):
-    jwt_info = JwtInfo(request.cookies.get("jwt"))
-    try:
-        if jwt_info.valid:
-
-            query_set = select(Users).filter(Users.id == jwt_info.id)
-            user = await session.execute(query_set)
-            user = user.scalars().all()
-            return user
-        else:
-            return HTTPException(status_code=500, detail=jwt_info.info_except)
-    except Exception as e:
-        print(e)
-        return HTTPException(status_code=500, detail="something went wrong")
-    finally:
-        await session.close()
