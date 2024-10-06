@@ -1,6 +1,7 @@
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth.check_commands import check_value, check_mail
+from auth.converter import RequestAnswer
 from auth.hash_password import hash_password
 from auth.jwt_functions import JwtInfo
 from models.models import Users
@@ -25,8 +26,8 @@ async def showinfo(request: Request,
 
             query_set = select(Users).filter(Users.id == jwt_info.id)
             user = await session.execute(query_set)
-            user = user.scalars().all()
-            return user
+            user = user.scalars().first()
+            return RequestAnswer(detail=user, status_code=200)
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
@@ -45,8 +46,8 @@ async def aviability(value: str,
                      session: AsyncSession = Depends(get_session)):
     try:
         if arg in ["email", "number", "username"]:
-            print(1)
-            return await check_value(session=session, argument=arg, value=value)
+            result = await check_value(session=session, argument=arg, value=value)
+            return RequestAnswer(detail=result, status_code=200)
         else:
             return HTTPException(status_code=500, detail="you have not permission")
     except Exception as e:

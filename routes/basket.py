@@ -2,6 +2,8 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import insert, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, Query
+
+from auth.converter import RequestAnswer
 from auth.jwt_functions import JwtInfo
 from data_base import get_session
 from models.models import Basket, Food, Set, UsersHistory
@@ -37,7 +39,6 @@ async def add_food_to_basket(food_id: int, request: Request, session: AsyncSessi
                 })
                 await session.execute(stmt)
                 await session.commit()
-                return price
             else:
                 return HTTPException(status_code=500, detail="food is not be")
         else:
@@ -58,7 +59,7 @@ async def watch_basket(request: Request, session: AsyncSession = Depends(get_ses
             query_set = select(Basket).filter(Basket.user_id == jwt_info.id)
             food = await session.execute(query_set)
             food = food.scalars().all()
-            return food
+            return RequestAnswer(detail=food, status_code=200)
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
@@ -76,7 +77,6 @@ async def delete_product_from_basket(id: int, request: Request, session: AsyncSe
             query_set = delete(Basket).filter(Basket.id == id)
             await session.execute(query_set)
             await session.commit()
-            return "product delete"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
@@ -130,7 +130,7 @@ async def watch_history(request: Request, session: AsyncSession = Depends(get_se
             query_set = select(UsersHistory).filter(UsersHistory.user_id == jwt_info.id)
             result = await session.execute(query_set)
             result = result.scalars().all()
-            return result
+            return RequestAnswer(detail=result, status_code=200)
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:

@@ -2,6 +2,8 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import insert, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, Query
+
+from auth.converter import RequestAnswer
 from auth.jwt_functions import JwtInfo
 from data_base import get_session
 from models.models import UsersFavoriteFood, UsersFavoriteSet
@@ -30,7 +32,6 @@ async def add_food_to_favorite_list(food_id: int, request: Request, session: Asy
             })
             await session.execute(stmt)
             await session.commit()
-            return "product add"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except:
@@ -54,7 +55,7 @@ async def watch_list(request: Request, session: AsyncSession = Depends(get_sessi
                 "sets": list_set,
                 "foods": list_food
                       }
-            return result
+            return RequestAnswer(detail=result, status_code=200)
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
@@ -78,7 +79,6 @@ async def delete_product_from_favorite_list(food_id: int, request: Request, sess
             query_set = delete(tables[type_food]).filter(parametres[type_food] == food_id).filter(tables[type_food].user_id == jwt_info.id)
             await session.execute(query_set)
             await session.commit()
-            return "product delete"
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:
