@@ -40,7 +40,7 @@ class Food(Base):
 class Set(Base):
     __tablename__ = "set"
     id = Column(Integer, primary_key=True)
-    image_url = Column(String, nullable=False, unique=True)
+    image_url = Column(String, nullable=False, unique=True )
     title = Column(String, nullable=False, unique=True)
     price = Column(Integer, nullable=False)
     weight = Column(Integer, nullable=False)

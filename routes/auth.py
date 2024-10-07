@@ -61,6 +61,8 @@ async def signin(user_sign_in: UserSignIn,
                     key="jwt",
                     value=create_jwt(user_information.username, user_information.id),
                     httponly=True,
+                    secure=True,
+                    samesite="None",
                     max_age=int(token_expiration.total_seconds()),
                     expires=int(token_expiration.total_seconds()),
                 )
