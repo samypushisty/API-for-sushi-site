@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from auth.converter import RequestAnswer
 from auth.jwt_functions import JwtInfo
 from data_base import get_session
-from models.models import UsersFavoriteFood, UsersFavoriteSet
+from models.models import UsersFavoriteFood, UsersFavoriteSet, Set, Food
 from fastapi import Request
 
 
@@ -48,14 +48,20 @@ async def watch_list(request: Request, session: AsyncSession = Depends(get_sessi
             query_set = select(UsersFavoriteSet.set_id).filter(UsersFavoriteSet.user_id == jwt_info.id)
             list_set = await session.execute(query_set)
             list_set = list_set.scalars().all()
+
+            query_set = select(Set).filter(Set.id.in_(list_set))
+            list_set = await session.execute(query_set)
+            list_set = list_set.scalars().all()
+
             query_food = select(UsersFavoriteFood.food_id).filter(UsersFavoriteFood.user_id == jwt_info.id)
             list_food = await session.execute(query_food)
             list_food = list_food.scalars().all()
-            result = {
-                "sets": list_set,
-                "foods": list_food
-                      }
-            return RequestAnswer(detail=result, status_code=200)
+
+            query_food = select(Food).filter(Food.id.in_(list_food))
+            list_food = await session.execute(query_food)
+            list_food = list_food.scalars().all()
+
+            return RequestAnswer(detail=list_set + list_food, status_code=200)
         else:
             return HTTPException(status_code=500, detail=jwt_info.info_except)
     except Exception as e:

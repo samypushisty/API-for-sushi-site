@@ -1,11 +1,36 @@
 from fastapi.exceptions import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from auth.converter import RequestAnswer, tojson
 from data_base import get_session
 from models.models import Food, Set, FoodInSet
+
+redis = {
+    "set": [],
+    "sushi": [],
+    "drink": [],
+    "sauce": []
+}
+
+
+async def reload_book_bd_id(session: AsyncSession):
+    try:
+        global redis
+        for i in ["sushi", "drink", "sauce"]:
+            query = select(Food.id).filter(Food.type == i)
+            result = await session.execute(query)
+            redis[i] = result.scalars().all()
+        query = select(Set.id)
+        result = await session.execute(query)
+        redis["set"] = result.scalars().all()
+        for i in redis:
+            print(redis[i])
+    except Exception as e:
+        print("vlad")
+        print(e)
+
 
 
 
@@ -57,3 +82,35 @@ async def upload_image(food_id: int, type_food: str):
     except Exception as e:
         print(e)
         return HTTPException(status_code=500, detail="something went wrong")
+
+
+@product_rout.get("/foods/{page}")
+async def eight_food(page: int,
+                     type_food: str = Query(None,
+                                            title="Type of food",
+                                            description="Choose from sushi, drink, sauce"),
+                     session: AsyncSession = Depends(get_session)):
+    tables = {"set": Set, "sushi": Food, "drink": Food, "sauce": Food}
+
+    try:
+        if page * 8 - 8 < len(redis[type_food]):
+            if page * 8 < len(redis[type_food]):
+                first_id = page * 8 - 8
+                last_id = page * 8 - 1
+            else:
+                first_id = page * 8 - 8
+                last_id = len(redis[type_food]) - 1
+
+            print(redis[type_food][first_id:last_id+1])
+            query = select(tables[type_food]).filter(tables[type_food].id.in_(redis[type_food][first_id:last_id+1]))
+            result = await session.execute(query)
+            result = result.scalars().all()
+            return RequestAnswer(detail=result, status_code=200)
+        else:
+            return RequestAnswer(detail="page not found", status_code=200)
+    except Exception as e:
+        print(e)
+        return HTTPException(status_code=500, detail="something went wrong")
+    finally:
+        await session.close()
+
