@@ -50,6 +50,7 @@ class Set(Base):
 class News(Base):
     __tablename__ = "news"
     id = Column(Integer, primary_key=True)
+    image_url = Column(String, nullable=False, unique=True)
     title = Column(String, nullable=False, unique=True)
     body = Column(String, nullable=False)
 

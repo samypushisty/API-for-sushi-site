@@ -46,8 +46,10 @@ async def food_get(food_id: int, session: AsyncSession = Depends(get_session)):
         query_set = select(Food).filter(Food.id == food_id)
         food = await session.execute(query_set)
         food = food.scalars().first()
-        print("vlad")
-        return RequestAnswer(detail=food, status_code=200)
+        if food:
+            return RequestAnswer(detail=food, status_code=200)
+        else:
+            return RequestAnswer(detail="None id", status_code=200)
     except Exception as e:
         print(e)
         return HTTPException(status_code=500, detail="something went wrong")
@@ -60,11 +62,16 @@ async def sushi_set_get(set_id: int, session: AsyncSession = Depends(get_session
     try:
         query_set = select(Set).filter(Set.id == set_id)
         sushi_set = await session.execute(query_set)
-        sushi_set = tojson(sushi_set.scalars().first())
-        query_food_in_set = select(FoodInSet.food_id).filter(FoodInSet.set_id == set_id)
-        food_in_set = await session.execute(query_food_in_set)
-        sushi_set["food_in_set"] = food_in_set.scalars().all()
-        return RequestAnswer(detail=sushi_set, status_code=200)
+        sushi_set = sushi_set.scalars().first()
+        if sushi_set:
+            sushi_set = tojson(sushi_set)
+            query_food_in_set = select(FoodInSet.food_id).filter(FoodInSet.set_id == set_id)
+            food_in_set = await session.execute(query_food_in_set)
+            sushi_set["food_in_set"] = food_in_set.scalars().all()
+            return RequestAnswer(detail=sushi_set, status_code=200)
+        else:
+            return RequestAnswer(detail="None id", status_code=200)
+
     except Exception as e:
         print(e)
         return HTTPException(status_code=500, detail="something went wrong")

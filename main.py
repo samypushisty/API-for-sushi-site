@@ -7,6 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 from routes.basket import basket_rout
 import uvicorn
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from routes.news import reload_news_bd_id, news_rout
 from routes.produt import product_rout, reload_book_bd_id
 from routes.user import userrouter
 from fastapi import Depends
@@ -21,6 +23,7 @@ app = FastAPI(
 async def startup_event():
     async for session in get_session():
         await reload_book_bd_id(session=session)
+        await reload_news_bd_id(session=session)
 
 app.add_event_handler("startup", startup_event)
 
@@ -47,6 +50,7 @@ app.include_router(userrouter)
 app.include_router(product_rout)
 app.include_router(favorite_list_rout)
 app.include_router(basket_rout)
+app.include_router(news_rout)
 
 
 
