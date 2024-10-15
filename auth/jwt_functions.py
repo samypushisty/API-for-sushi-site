@@ -2,6 +2,16 @@ import time
 import jwt
 from config import SECRET_KEY
 from datafunctions import naive_utcnow, naive_utcfromtimestamp
+from fastapi import Request
+from fastapi.exceptions import HTTPException
+
+
+def validation(request: Request):
+    jwt_info = JwtInfo(request.cookies.get("jwt"))
+    if jwt_info.valid:
+        return jwt_info
+    else:
+        raise HTTPException(status_code=500, detail=jwt_info.info_except)
 
 
 def create_jwt(name: str, id: int):

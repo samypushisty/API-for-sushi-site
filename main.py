@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from data_base import get_session
+from database import get_session
 from routes.auth import authrouter
 from routes.favorite_list import favorite_list_rout
 from starlette.middleware.cors import CORSMiddleware
